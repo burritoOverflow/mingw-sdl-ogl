@@ -34,9 +34,9 @@ static const char *FRAG_SRC =
 
 /* ── Vertex data: position (x,y) + color (r,g,b) ── */
 static const float VERTS[] = {
-/*   x      y      r     g     b  */
-     0.0f,  0.6f,  1.0f, 0.2f, 0.2f,   /* top    – red   */
-    -0.6f, -0.4f,  0.2f, 1.0f, 0.2f,   /* left   – green */
+        /*   x      y             r     g     b  */
+     0.0f,  0.6f,  1.0f, 0.2f, 0.2f,        /* top    – red   */
+    -0.6f, -0.4f,  0.2f, 1.0f, 0.2f,        /* left   – green */
      0.6f, -0.4f,  0.2f, 0.2f, 1.0f,   /* right  – blue  */
 };
 
