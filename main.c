@@ -4,14 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* ── OpenGL function pointer types ──
-   SDL_opengl_glext.h (pulled in by SDL_opengl.h) already typedefs the
-   standard PFNGL* names, so we just use those directly rather than
-   redefining them and getting conflicting-type errors.             ── */
-
-#define LOAD(type, name) \
-    type name = (type)SDL_GL_GetProcAddress(#name); \
-    if (!name) { fprintf(stderr, "Failed to load " #name "\n"); return 1; }
+#include "gl_loader.h"
 
 /* ── Shaders ── */
 static const char *VERT_SRC =
@@ -40,13 +33,7 @@ static const float VERTS[] = {
      0.6f, -0.4f,  0.2f, 0.2f, 1.0f,   /* right  – blue  */
 };
 
-static GLuint compile_shader(
-    PFNGLCREATESHADERPROC glCreateShader,
-    PFNGLSHADERSOURCEPROC glShaderSource,
-    PFNGLCOMPILESHADERPROC glCompileShader,
-    PFNGLGETSHADERIVPROC glGetShaderiv,
-    PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog,
-    GLenum type, const char *src)
+static GLuint compile_shader(GLenum type, const char *src)
 {
     GLuint s = glCreateShader(type);
     glShaderSource(s, 1, &src, NULL);
@@ -88,31 +75,12 @@ int main(void)
     }
     SDL_GL_SetSwapInterval(1); /* vsync */
 
-    /* ── Load GL function pointers ── */
-    LOAD(PFNGLCREATESHADERPROC,           glCreateShader)
-    LOAD(PFNGLSHADERSOURCEPROC,           glShaderSource)
-    LOAD(PFNGLCOMPILESHADERPROC,          glCompileShader)
-    LOAD(PFNGLGETSHADERIVPROC,            glGetShaderiv)
-    LOAD(PFNGLGETSHADERINFOLOGPROC,       glGetShaderInfoLog)
-    LOAD(PFNGLCREATEPROGRAMPROC,          glCreateProgram)
-    LOAD(PFNGLATTACHSHADERPROC,           glAttachShader)
-    LOAD(PFNGLLINKPROGRAMPROC,            glLinkProgram)
-    LOAD(PFNGLUSEPROGRAMPROC,             glUseProgram)
-    LOAD(PFNGLDELETESHADERPROC,           glDeleteShader)
-    LOAD(PFNGLGENBUFFERSPROC,             glGenBuffers)
-    LOAD(PFNGLBINDBUFFERPROC,             glBindBuffer)
-    LOAD(PFNGLBUFFERDATAPROC,             glBufferData)
-    LOAD(PFNGLGENVERTEXARRAYSPROC,        glGenVertexArrays)
-    LOAD(PFNGLBINDVERTEXARRAYPROC,        glBindVertexArray)
-    LOAD(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray)
-    LOAD(PFNGLVERTEXATTRIBPOINTERPROC,    glVertexAttribPointer)
+    if (!load_gl_functions()) {
+        return 1;
+    }
 
-    GLuint vert = compile_shader(glCreateShader, glShaderSource, glCompileShader,
-                                  glGetShaderiv, glGetShaderInfoLog,
-                                  GL_VERTEX_SHADER, VERT_SRC);
-    GLuint frag = compile_shader(glCreateShader, glShaderSource, glCompileShader,
-                                  glGetShaderiv, glGetShaderInfoLog,
-                                  GL_FRAGMENT_SHADER, FRAG_SRC);
+    GLuint vert = compile_shader(GL_VERTEX_SHADER, VERT_SRC);
+    GLuint frag = compile_shader(GL_FRAGMENT_SHADER, FRAG_SRC);
     if (!vert || !frag) return 1;
 
     GLuint prog = glCreateProgram();

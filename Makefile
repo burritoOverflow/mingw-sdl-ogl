@@ -10,6 +10,7 @@
 
 CC      = x86_64-w64-mingw32-gcc
 TARGET  = triangle.exe
+SRCS    = main.c gl_loader.c
 
 # Fedora mingw packages install here
 SDL3_DIR ?= /usr/x86_64-w64-mingw32/sys-root/mingw
@@ -31,8 +32,8 @@ LDFLAGS = -L$(SDL3_DIR)/lib \
 
 all: $(TARGET)
 
-$(TARGET): main.c
-	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+$(TARGET): $(SRCS)
+	$(CC) $(CFLAGS) $(SRCS) -o $@ $(LDFLAGS)
 
 run: $(TARGET)
 	wine $(TARGET)
