@@ -6,7 +6,6 @@
 
 #include "gl_loader.h"
 
-/* ── Shaders ── */
 static const char *VERT_SRC =
     "#version 330 core\n"
     "layout(location = 0) in vec2 aPos;\n"
@@ -49,6 +48,14 @@ static GLuint compile_shader(GLenum type, const char *src)
     return s;
 }
 
+static int should_quit(const SDL_Event *ev) {
+  if (ev->type == SDL_EVENT_QUIT)
+    return 1;
+  if (ev->type == SDL_EVENT_KEY_DOWN && ev->key.key == SDLK_ESCAPE)
+    return 1;
+  return 0;
+}
+
 int main(void)
 {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -62,7 +69,7 @@ int main(void)
 
     /* SDL3: no x/y position params */
     SDL_Window *win = SDL_CreateWindow("OpenGL Triangle", 800, 600,
-                                       SDL_WINDOW_OPENGL);
+                                       SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!win) {
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
         return 1;
@@ -112,12 +119,14 @@ int main(void)
 
     int running = 1;
     SDL_Event ev;
+    int fb_w, fb_h;
     while (running) {
         while (SDL_PollEvent(&ev)) {
-            if (ev.type == SDL_EVENT_QUIT) running = 0;
-            if (ev.type == SDL_EVENT_KEY_DOWN &&
-                ev.key.key == SDLK_ESCAPE)
-                running = 0;
+            if (should_quit(&ev)) running = 0;
+            if (ev.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+                SDL_GetWindowSizeInPixels(win, &fb_w, &fb_h);
+                glViewport(0, 0, fb_w, fb_h);
+            }
         }
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
